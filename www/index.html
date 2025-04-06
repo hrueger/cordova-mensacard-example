@@ -3,37 +3,29 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mensa Card Reader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="cordova.js"></script>
     <script src="js/index.js"></script>
     <style>
         body {
             font-family: sans-serif;
+            padding: 2em;
             text-align: center;
-            padding-top: 50px;
         }
 
-        #output {
-            margin-top: 30px;
-            font-size: 1.2em;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 1em;
-            border-radius: 8px;
+        .info {
+            margin: 2em 0;
         }
     </style>
 </head>
 
 <body>
     <h1>Mensa Card Reader</h1>
-    <button onclick="startScan()">Scan Mensa Card</button>
-    <div id="output">
-        <p><strong>Status:</strong> <span id="status">Ready</span></p>
-        <p><strong>Balance:</strong> <span id="balance">--</span> €</p>
-        <p><strong>Last Transaction:</strong> <span id="lastTransaction">--</span> €</p>
+    <div class="info">
+        <p>Status: <span id="status">Waiting for card...</span></p>
+        <p>Balance: <span id="balance">--</span> €</p>
+        <p>Last Transaction: <span id="lastTransaction">--</span> €</p>
     </div>
 </body>
 

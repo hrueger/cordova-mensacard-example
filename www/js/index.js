@@ -1,76 +1,52 @@
-document.addEventListener("deviceready", onDeviceReady, false);
+document.addEventListener(
+    "deviceready",
+    () => {
+        nfc.addTagDiscoveredListener(handleDesfire);
+        setStatus("Ready to scan Mensa card...");
+    },
+    false
+);
 
-function onDeviceReady() {
-    console.log("Cordova is ready");
-    updateStatus("Tap your Mensa card");
-}
+async function handleDesfire(nfcEvent) {
+    const tagId = nfc.bytesToHexString(nfcEvent.tag.id);
+    setStatus("Card detected: " + tagId);
 
-function updateStatus(message) {
-    document.getElementById("status").innerText = message;
-}
+    try {
+        await nfc.connect("android.nfc.tech.IsoDep", 500);
+        console.log("Connected to tag:", tagId);
 
-function updateBalance(balance, lastTransaction) {
-    document.getElementById("balance").innerText = balance.toFixed(2);
-    document.getElementById("lastTransaction").innerText = `-${lastTransaction.toFixed(2)}`;
-}
+        // Select Mensa app (AID: 0x5F8415)
+        const AID = [0x5f, 0x84, 0x15];
+        await nfc.transceive(new Uint8Array([0x90, 0x5a, 0x00, 0x00, 0x03, ...AID, 0x00]).buffer);
+        console.log("Application selected");
 
-function byteArrayToInt(bytes) {
-    let value = 0;
-    for (let i = 0; i < bytes.length; i++) {
-        value += bytes[i] << (8 * (bytes.length - 1 - i));
-    }
-    return value;
-}
+        // Read transaction file and balance
+        const transactionBuffer = await nfc.transceive(new Uint8Array([0x90, 0xf5, 0x00, 0x00, 0x01, 0x01, 0x00]).buffer);
+        const balanceBuffer = await nfc.transceive(new Uint8Array([0x90, 0x6c, 0x00, 0x00, 0x01, 0x01, 0x00]).buffer);
 
-async function startScan() {
-    updateStatus("Scanning...");
-    cordova.plugins.permissions.requestPermission(cordova.plugins.permissions.NFC, console.log, console.log);
+        // Parse values using DataView (little-endian)
+        const lastTransaction = readUInt32(transactionBuffer, 12) / 1000;
+        const balance = readUInt32(balanceBuffer, 0) / 1000;
 
-    nfc.addTagDiscoveredListener(handleDesfire);
-    const DESFIRE_SELECT_PICC = "00 A4 04 00 07 D2 76 00 00 85 01 00";
-    const DESFIRE_SELECT_AID = "90 5A 00 00 03 AA AA AA 00";
-
-    // nfc.addTagDiscoveredListener(console.log, console.log, console.log);
-
-    // nfc.readerMode(0, console.log, console.log);
-
-    async function handleDesfire(nfcEvent) {
-        const tagId = nfc.bytesToHexString(nfcEvent.tag.id);
-        console.log("Processing", tagId);
-
-        try {
-            await nfc.connect("android.nfc.tech.IsoDep", 500);
-            console.log("connected to", tagId);
-
-            let response = await nfc.transceive(DESFIRE_SELECT_PICC);
-            ensureResponseIs("9000", response);
-
-            response = await nfc.transceive(DESFIRE_SELECT_AID);
-            ensureResponseIs("9100", response);
-            // 91a0 means the requested application not found
-
-            alert("Selected application AA AA AA");
-
-            // more transcieve commands go here
-        } catch (error) {
-            alert(error);
-        } finally {
-            await nfc.close();
-            console.log("closed");
-        }
-    }
-
-    function ensureResponseIs(expectedResponse, buffer) {
-        const responseString = util.arrayBufferToHexString(buffer);
-        if (expectedResponse !== responseString) {
-            const error = "Expecting " + expectedResponse + " but received " + responseString;
-            throw error;
-        }
+        // Display values
+        document.getElementById("balance").innerText = balance.toFixed(2);
+        document.getElementById("lastTransaction").innerText = "-" + lastTransaction.toFixed(2);
+        setStatus("Data read successfully");
+    } catch (err) {
+        console.error("Error: ", err);
+        setStatus("Error: " + err);
+    } finally {
+        await nfc.close();
+        console.log("Connection closed");
     }
 }
 
-function transceive(command) {
-    return new Promise((resolve, reject) => {
-        nfc.transceive(command, resolve, reject);
-    });
+// Reads 4 bytes as little-endian unsigned int from an ArrayBuffer
+function readUInt32(buffer, offset) {
+    const view = new DataView(buffer);
+    return view.getUint32(offset, true); // true = little-endian
+}
+
+function setStatus(text) {
+    document.getElementById("status").innerText = text;
 }
