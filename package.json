@@ -15,11 +15,13 @@
   "devDependencies": {
     "community-cordova-plugin-nfc": "^1.4.0",
     "cordova-android": "^14.0.0",
+    "cordova-ios": "^7.1.1",
     "cordova-plugin-android-permissions": "^1.1.5"
   },
   "cordova": {
     "platforms": [
-      "android"
+      "android",
+      "ios"
     ],
     "plugins": {
       "community-cordova-plugin-nfc": {},

@@ -8,6 +8,9 @@
         Apache Cordova Team
     </author>
     <content src="index.html" />
+    <access origin="*" allows-arbitrary-loads-in-web-content='true' />
+    <allow-navigation href="*" />
+
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
 </widget>
