@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Mensa Card Reader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2em;
+            text-align: center;
+        }
+
+        .info {
+            margin: 2em 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Mensa Card Reader</h1>
+    <div class="info">
+        <p>Status: <span id="status">Waiting for card...</span></p>
+        <p>Balance: <span id="balance">--</span> €</p>
+        <p>Last Transaction: <span id="lastTransaction">--</span> €</p>
+    </div>
+
+    <script>
+        // on postMessage, set values in the info div
+        window.addEventListener("message", function (event) {
+            const data = event.data;
+            if (data.type === "nfcMensaCard") {
+                document.getElementById("balance").innerText = data.balance;
+                document.getElementById("lastTransaction").innerText = data.lastTransaction;
+                document.getElementById("status").innerText = data.status;
+            }
+        });
+    </script>
+</body>
+
+</html>

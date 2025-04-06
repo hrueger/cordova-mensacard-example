@@ -2,14 +2,14 @@ document.addEventListener(
     "deviceready",
     () => {
         nfc.addTagDiscoveredListener(handleDesfire);
-        setStatus("Ready to scan Mensa card...");
+        send("Ready to scan Mensa card...");
     },
     false
 );
 
 async function handleDesfire(nfcEvent) {
     const tagId = nfc.bytesToHexString(nfcEvent.tag.id);
-    setStatus("Card detected: " + tagId);
+    send("Card detected: " + tagId);
 
     try {
         await nfc.connect("android.nfc.tech.IsoDep", 500);
@@ -28,13 +28,10 @@ async function handleDesfire(nfcEvent) {
         const lastTransaction = readUInt32(transactionBuffer, 12) / 1000;
         const balance = readUInt32(balanceBuffer, 0) / 1000;
 
-        // Display values
-        document.getElementById("balance").innerText = balance.toFixed(2);
-        document.getElementById("lastTransaction").innerText = "-" + lastTransaction.toFixed(2);
-        setStatus("Data read successfully");
+        send("Data read successfully", balance, lastTransaction);
     } catch (err) {
         console.error("Error: ", err);
-        setStatus("Error: " + err);
+        send("Error: " + err);
     } finally {
         await nfc.close();
         console.log("Connection closed");
@@ -47,6 +44,14 @@ function readUInt32(buffer, offset) {
     return view.getUint32(offset, true); // true = little-endian
 }
 
-function setStatus(text) {
-    document.getElementById("status").innerText = text;
+function send(status, balance, lastTransaction) {
+    document.getElementById("mainIframe").contentWindow.postMessage(
+        {
+            type: "nfcMensaCard",
+            status: status,
+            balance: balance,
+            lastTransaction: lastTransaction,
+        },
+        "*"
+    );
 }
