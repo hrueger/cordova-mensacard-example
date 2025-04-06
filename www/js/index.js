@@ -1,8 +1,11 @@
 document.addEventListener(
     "deviceready",
-    () => {
+    async () => {
         nfc.addTagDiscoveredListener(handleDesfire);
         send("Ready to scan Mensa card...");
+        if (window.cordova.platformId === "ios") {
+            alert(JSON.stringify(await nfc.scanTag()));
+        }
     },
     false
 );
