@@ -13,11 +13,17 @@
   "author": "Apache Cordova Team",
   "license": "Apache-2.0",
   "devDependencies": {
-    "cordova-android": "^14.0.0"
+    "community-cordova-plugin-nfc": "^1.4.0",
+    "cordova-android": "^14.0.0",
+    "cordova-plugin-android-permissions": "^1.1.5"
   },
   "cordova": {
     "platforms": [
       "android"
-    ]
+    ],
+    "plugins": {
+      "community-cordova-plugin-nfc": {},
+      "cordova-plugin-android-permissions": {}
+    }
   }
 }
